@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from server.database import init_db
 from server.routers import auth, leads, tasks, export
@@ -18,6 +18,7 @@ from server.routers import auth, leads, tasks, export
 from config import KEYWORDS, TARGET_REGIONS
 from paths import STATIC_DIR
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="布匹中介获客工具 - 管理后台", version="2.0")
@@ -54,21 +55,26 @@ def get_regions():
 
 
 # 生产模式：托管前端静态文件
-logger.info(f"STATIC_DIR = {STATIC_DIR}, exists = {os.path.isdir(STATIC_DIR)}")
-if os.path.isdir(STATIC_DIR):
-    # 挂载所有静态资源（js/css/图片等）
-    app.mount("/assets", StaticFiles(directory=os.path.join(STATIC_DIR, "assets")), name="assets")
-    logger.info("Mounted /assets from %s", os.path.join(STATIC_DIR, "assets"))
+logger.info("STATIC_DIR = %s, exists = %s", STATIC_DIR, os.path.isdir(STATIC_DIR))
+assets_dir = os.path.join(STATIC_DIR, "assets")
+if os.path.isdir(assets_dir):
+    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+    logger.info("Mounted /assets from %s", assets_dir)
 
-    @app.get("/{full_path:path}")
-    def serve_spa(full_path: str):
-        """SPA fallback: 所有非 API 路由返回 index.html"""
-        file_path = os.path.join(STATIC_DIR, full_path)
-        if full_path and os.path.isfile(file_path):
-            return FileResponse(file_path)
-        return FileResponse(os.path.join(STATIC_DIR, "index.html"))
-else:
-    logger.warning("Frontend not found at %s - SPA routes not registered", STATIC_DIR)
+
+@app.get("/{full_path:path}")
+def serve_spa(full_path: str):
+    """SPA fallback: 所有非 API 路由返回 index.html"""
+    index_file = os.path.join(STATIC_DIR, "index.html")
+    if not os.path.isfile(index_file):
+        return JSONResponse(
+            {"error": "Frontend not built", "static_dir": STATIC_DIR},
+            status_code=503,
+        )
+    file_path = os.path.join(STATIC_DIR, full_path)
+    if full_path and os.path.isfile(file_path):
+        return FileResponse(file_path)
+    return FileResponse(index_file)
 
 
 @app.on_event("startup")
