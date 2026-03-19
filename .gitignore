@@ -2,13 +2,12 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
-dist/
+/dist/
 build/
 *.spec
 
 # Node
 web/node_modules/
-web/dist/
 
 # Data
 data/
