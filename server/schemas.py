@@ -110,3 +110,24 @@ class ExportRequest(BaseModel):
 class ConfigResponse(BaseModel):
     keywords: list[str]
     regions: list[str]
+
+
+# === Amap Key ===
+class AmapKeyCreate(BaseModel):
+    key: str
+    name: Optional[str] = ""
+    monthly_limit: int = 5000
+
+
+class AmapKeyOut(BaseModel):
+    id: int
+    key: str
+    name: str
+    is_active: bool
+    monthly_limit: int
+    used_count: int
+    reset_month: str
+    created_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True

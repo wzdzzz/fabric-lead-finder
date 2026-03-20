@@ -2,7 +2,7 @@
 
 import json
 from datetime import datetime
-from sqlalchemy import Column, Integer, Text, DateTime
+from sqlalchemy import Column, Integer, Text, DateTime, Boolean
 from server.database import Base
 
 
@@ -63,3 +63,17 @@ class ScrapeTask(Base):
             return json.loads(self.regions) if self.regions else []
         except (json.JSONDecodeError, TypeError):
             return []
+
+
+class AmapKey(Base):
+    __tablename__ = "amap_keys"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    key = Column(Text, unique=True, nullable=False)
+    name = Column(Text, default="")
+    is_active = Column(Boolean, default=False)
+    monthly_limit = Column(Integer, default=5000)
+    used_count = Column(Integer, default=0)
+    reset_month = Column(Text, default="")  # "2026-03" 格式，用于按月重置计数
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)

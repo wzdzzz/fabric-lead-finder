@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Typography, Drawer, Grid } from 'antd';
 import {
-  DashboardOutlined, TeamOutlined, HistoryOutlined, LogoutOutlined, MenuOutlined,
+  DashboardOutlined, TeamOutlined, HistoryOutlined, LogoutOutlined, MenuOutlined, KeyOutlined,
 } from '@ant-design/icons';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Leads from './pages/Leads';
 import History from './pages/History';
+import AmapKeys from './pages/AmapKeys';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -34,6 +35,7 @@ function AppLayout() {
     { key: '/', icon: <DashboardOutlined />, label: '数据概览' },
     { key: '/leads', icon: <TeamOutlined />, label: '客户管理' },
     { key: '/history', icon: <HistoryOutlined />, label: '任务历史' },
+    { key: '/keys', icon: <KeyOutlined />, label: 'Key 管理' },
   ];
 
   const handleLogout = () => {
@@ -136,6 +138,7 @@ function AppLayout() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/leads" element={<Leads />} />
             <Route path="/history" element={<History />} />
+            <Route path="/keys" element={<AmapKeys />} />
           </Routes>
         </Content>
       </Layout>

@@ -4,8 +4,7 @@
 
 import os
 
-# 高德地图 API Key（优先读环境变量，方便服务器部署）
-AMAP_KEY = os.environ.get("AMAP_KEY", "")
+# 高德地图 API Key 已迁移到数据库管理，通过页面添加和切换
 
 # 搜索关键词 - 分组策略，覆盖面更广
 # 高德POI搜索会同时匹配名称和类型，不需要太多组合

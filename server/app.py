@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 
 from server.database import init_db
-from server.routers import auth, leads, tasks, export
+from server.routers import auth, leads, tasks, export, amap_keys
 
 from config import KEYWORDS, TARGET_REGIONS
 from paths import STATIC_DIR
@@ -49,6 +49,7 @@ app.include_router(auth.router)
 app.include_router(leads.router)
 app.include_router(tasks.router)
 app.include_router(export.router)
+app.include_router(amap_keys.router)
 
 
 @app.get("/api/config/keywords")

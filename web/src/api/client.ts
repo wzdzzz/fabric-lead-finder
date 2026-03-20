@@ -53,3 +53,10 @@ export const getLeadStats = () => api.get('/leads/stats');
 // Export
 export const exportExcel = (params: Record<string, string>) =>
   api.post('/export', params, { responseType: 'blob' });
+
+// Amap Keys
+export const getAmapKeys = () => api.get('/amap-keys');
+export const addAmapKey = (data: { key: string; name?: string; monthly_limit?: number }) =>
+  api.post('/amap-keys', data);
+export const activateAmapKey = (id: number) => api.put(`/amap-keys/${id}/activate`);
+export const deleteAmapKey = (id: number) => api.delete(`/amap-keys/${id}`);

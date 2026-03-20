@@ -10,7 +10,7 @@ import logging
 
 import requests
 
-from config import AMAP_KEY, REQUEST_DELAY, REQUEST_TIMEOUT, MAX_PAGES_PER_QUERY
+from config import REQUEST_DELAY, REQUEST_TIMEOUT, MAX_PAGES_PER_QUERY
 
 logger = logging.getLogger(__name__)
 
@@ -28,13 +28,15 @@ def _is_relevant(name, poi_type):
     return any(term in text for term in RELEVANT_TERMS)
 
 
-def search_amap(keyword, city):
+def search_amap(keyword, city, amap_key=None, on_api_call=None):
     """
     通过高德地图 POI 搜索服装企业
+    amap_key: 高德 API key
+    on_api_call: 每次 API 调用后的回调（用于计数）
     返回 [{"name", "address", "phone", "region", ...}]
     """
-    if not AMAP_KEY:
-        logger.warning("[高德地图] 未配置 AMAP_KEY，请在 config.py 中填入")
+    if not amap_key:
+        logger.warning("[高德地图] 未配置 AMAP_KEY")
         return []
 
     results = []
@@ -46,7 +48,7 @@ def search_amap(keyword, city):
             time.sleep(delay)
 
             params = {
-                "key": AMAP_KEY,
+                "key": amap_key,
                 "keywords": keyword,
                 "city": city,
                 "citylimit": "true",
@@ -62,11 +64,15 @@ def search_amap(keyword, city):
             )
             data = resp.json()
 
+            # 每次 API 调用后回调
+            if on_api_call:
+                on_api_call(amap_key)
+
             if data.get("status") != "1":
                 info = data.get("info", "未知错误")
                 infocode = data.get("infocode", "")
                 if infocode == "10044":
-                    logger.error("[高德地图] 今日API配额已用完，明天再试")
+                    logger.error("[高德地图] 今日API配额已用完")
                     return results
                 logger.warning(f"[高德地图] API错误: {info} (code:{infocode})")
                 break

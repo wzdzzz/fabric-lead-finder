@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from scraper_map import search_amap
 from server.database import SessionLocal
 from server.models import Lead, ScrapeTask
+from server.routers.amap_keys import get_active_key, increment_key_usage
 
 logger = logging.getLogger(__name__)
 
@@ -34,10 +35,24 @@ def _run_scrape(task_id: int):
         new_added = 0
         progress = 0
 
+        def on_api_call(key_value):
+            """每次 API 调用后增加计数"""
+            increment_key_usage(db, key_value)
+
         for region in regions:
             for keyword in keywords:
                 try:
-                    results = search_amap(keyword, region)
+                    # 每次搜索前获取当前可用 key
+                    amap_key = get_active_key(db)
+                    if not amap_key:
+                        logger.error("所有高德 Key 额度已用完")
+                        task.status = "failed"
+                        task.error_msg = "所有高德 Key 额度已用完"
+                        task.finished_at = datetime.now()
+                        db.commit()
+                        return
+
+                    results = search_amap(keyword, region, amap_key=amap_key, on_api_call=on_api_call)
                     total_found += len(results)
 
                     # 写入数据库，去重

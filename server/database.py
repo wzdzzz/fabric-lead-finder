@@ -34,5 +34,5 @@ def get_db():
 
 
 def init_db():
-    from server.models import Lead, ScrapeTask  # noqa: F401 - ensure models registered
+    from server.models import Lead, ScrapeTask, AmapKey  # noqa: F401 - ensure models registered
     Base.metadata.create_all(bind=engine)
