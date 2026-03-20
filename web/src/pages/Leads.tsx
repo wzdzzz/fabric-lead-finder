@@ -243,35 +243,6 @@ export default function Leads() {
     },
   ];
 
-  const mobileColumns: ColumnsType<Lead> = [
-    {
-      title: '公司名称', dataIndex: 'name', ellipsis: true,
-    },
-    {
-      title: '电话', dataIndex: 'phone', width: 120,
-      render: (phone: string) =>
-        phone ? <a href={`tel:${phone}`} style={{ color: '#c00', fontWeight: 600 }}>{phone}</a>
-          : <span style={{ color: '#ccc' }}>-</span>,
-    },
-    {
-      title: '状态', dataIndex: 'status', width: 100,
-      render: (status: string, record: Lead) => (
-        <Select
-          size="small" value={status} style={{ width: 85 }}
-          onChange={(v) => handleStatusChange(record.id, v)}
-          options={STATUS_OPTIONS.map((s) => ({ label: s, value: s }))}
-          popupMatchSelectWidth={false}
-        />
-      ),
-    },
-    {
-      title: '', width: 40,
-      render: (_: unknown, record: Lead) => (
-        <Button type="link" icon={<EditOutlined />} onClick={() => openEdit(record)} size="small" />
-      ),
-    },
-  ];
-
   return (
     <div>
       <Card style={{ marginBottom: 16 }}>
@@ -373,11 +344,11 @@ export default function Leads() {
 
       <Table
         rowKey="id"
-        columns={isMobile ? mobileColumns : desktopColumns}
+        columns={desktopColumns}
         dataSource={data}
         loading={loading}
         size={isMobile ? 'small' : 'middle'}
-        scroll={isMobile ? undefined : { x: 1200 }}
+        scroll={{ x: 1200 }}
         rowSelection={{
           selectedRowKeys,
           onChange: (keys) => setSelectedRowKeys(keys as number[]),
