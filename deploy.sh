@@ -77,7 +77,7 @@ server {
     listen 443 ssl;
     server_name zhongyu.store www.zhongyu.store;
 
-    ssl_certificate /etc/nginx/ssl/zhongyu.store_bundle.pem;
+    ssl_certificate /etc/nginx/ssl/zhongyu.store.pem;
     ssl_certificate_key /etc/nginx/ssl/zhongyu.store.key;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
