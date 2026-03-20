@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from scraper_map import search_amap
 from server.database import SessionLocal
 from server.models import Lead, ScrapeTask
-from server.routers.amap_keys import get_active_key, increment_key_usage
+from server.services.amap_key_service import get_active_key, increment_key_usage
 
 logger = logging.getLogger(__name__)
 
