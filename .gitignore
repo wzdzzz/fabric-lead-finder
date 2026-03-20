@@ -8,6 +8,7 @@ build/
 
 # Node
 web/node_modules/
+web/dist/
 
 # Data
 data/
