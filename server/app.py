@@ -24,7 +24,14 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="布匹中介获客工具 - 管理后台", version="2.0")
 
 # CORS
-allowed_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+allowed_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://zhongyu.store",
+    "http://www.zhongyu.store",
+    "https://zhongyu.store",
+    "https://www.zhongyu.store",
+]
 # 服务器部署时允许对应域名
 if os.environ.get("RENDER_EXTERNAL_URL"):
     allowed_origins.append(os.environ["RENDER_EXTERNAL_URL"])

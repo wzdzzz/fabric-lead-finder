@@ -67,7 +67,7 @@ echo "[5/7] 配置 Nginx..."
 cat > /etc/nginx/sites-available/fabric-lead-finder <<'NGINXEOF'
 server {
     listen 80;
-    server_name _;
+    server_name zhongyu.store www.zhongyu.store;
 
     location / {
         proxy_pass http://127.0.0.1:8000;
