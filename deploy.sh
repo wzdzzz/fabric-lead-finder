@@ -13,12 +13,7 @@ echo "===== 布匹中介获客工具 - 部署开始 ====="
 # ---- 1. 系统依赖 ----
 echo "[1/7] 安装系统依赖..."
 apt-get update -qq
-apt-get install -y -qq python3.11 python3.11-venv python3-pip nginx git > /dev/null 2>&1 || {
-    apt-get install -y -qq software-properties-common > /dev/null 2>&1
-    add-apt-repository -y ppa:deadsnakes/ppa > /dev/null 2>&1
-    apt-get update -qq
-    apt-get install -y -qq python3.11 python3.11-venv python3-pip nginx git > /dev/null 2>&1
-}
+apt-get install -y python3.9 python3.9-venv python3-pip nginx git
 echo "  -> 系统依赖安装完成"
 
 # ---- 2. 确认代码和环境变量 ----
@@ -37,7 +32,7 @@ echo "  -> 代码和配置就绪"
 
 # ---- 3. Python 虚拟环境 ----
 echo "[3/7] 创建 Python 虚拟环境..."
-python3.11 -m venv venv
+python3.9 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip -q
 pip install -r requirements.txt -q
