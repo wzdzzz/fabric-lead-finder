@@ -65,22 +65,9 @@ echo "  -> systemd 服务已配置"
 # ---- 5. Nginx 反向代理 ----
 echo "[5/7] 配置 Nginx..."
 cat > /etc/nginx/sites-available/fabric-lead-finder <<'NGINXEOF'
-# HTTP -> HTTPS 跳转
 server {
     listen 80;
-    server_name zhongyu.store www.zhongyu.store;
-    return 301 https://$host$request_uri;
-}
-
-# HTTPS
-server {
-    listen 443 ssl;
-    server_name zhongyu.store www.zhongyu.store;
-
-    ssl_certificate /etc/nginx/ssl/zhongyu.store.pem;
-    ssl_certificate_key /etc/nginx/ssl/zhongyu.store.key;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
+    server_name _;
 
     location / {
         proxy_pass http://127.0.0.1:8000;
@@ -115,7 +102,7 @@ fi
 echo ""
 echo "====================================="
 echo "  部署完成！"
-echo "  访问地址: https://zhongyu.store"
+echo "  访问地址: http://$(curl -s ifconfig.me 2>/dev/null || echo '服务器IP')"
 echo ""
 echo "  常用命令:"
 echo "    查看日志: journalctl -u fabric-lead-finder -f"
