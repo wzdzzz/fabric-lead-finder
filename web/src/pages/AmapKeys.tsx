@@ -206,6 +206,9 @@ export default function AmapKeys() {
             <Form.Item label="每月额度" name="monthly_limit" initialValue={5000}>
               <InputNumber min={1} style={{ width: '100%' }} />
             </Form.Item>
+            <Form.Item label="已用次数" name="used_count" initialValue={0}>
+              <InputNumber min={0} style={{ width: '100%' }} placeholder="非必填，默认为 0" />
+            </Form.Item>
           </Form>
         </Modal>
       </div>

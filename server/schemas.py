@@ -117,6 +117,7 @@ class AmapKeyCreate(BaseModel):
     key: str
     name: Optional[str] = ""
     monthly_limit: int = 5000
+    used_count: int = 0
 
 
 class AmapKeyOut(BaseModel):

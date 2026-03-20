@@ -49,6 +49,7 @@ def add_key(
         name=data.name or f"Key-{count + 1}",
         is_active=count == 0,
         monthly_limit=data.monthly_limit,
+        used_count=data.used_count,
         reset_month=datetime.now().strftime("%Y-%m"),
     )
     db.add(key)
