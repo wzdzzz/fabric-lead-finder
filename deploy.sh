@@ -16,7 +16,7 @@ apt-get update -qq
 apt-get install -y python3.9 python3.9-venv python3-pip nginx git curl
 # 安装 Node.js 18.x（用于构建前端）
 if ! command -v node &> /dev/null; then
-    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
     apt-get install -y nodejs
 fi
 echo "  -> 系统依赖安装完成 (Node $(node --version))"
