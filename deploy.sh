@@ -13,8 +13,13 @@ echo "===== 布匹中介获客工具 - 部署开始 ====="
 # ---- 1. 系统依赖 ----
 echo "[1/7] 安装系统依赖..."
 apt-get update -qq
-apt-get install -y python3.9 python3.9-venv python3-pip nginx git
-echo "  -> 系统依赖安装完成"
+apt-get install -y python3.9 python3.9-venv python3-pip nginx git curl
+# 安装 Node.js 18.x（用于构建前端）
+if ! command -v node &> /dev/null; then
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+    apt-get install -y nodejs
+fi
+echo "  -> 系统依赖安装完成 (Node $(node --version))"
 
 # ---- 2. 确认代码和环境变量 ----
 echo "[2/7] 检查代码和配置..."
@@ -38,8 +43,16 @@ pip install --upgrade pip -q
 pip install -r requirements.txt -q
 echo "  -> Python 依赖安装完成"
 
-# ---- 4. systemd 服务 ----
-echo "[4/7] 配置 systemd 服务..."
+# ---- 4. 构建前端 ----
+echo "[4/8] 构建前端..."
+cd "$APP_DIR/web"
+npm install --production=false -q
+npx vite build
+cd "$APP_DIR"
+echo "  -> 前端构建完成"
+
+# ---- 5. systemd 服务 ----
+echo "[5/8] 配置 systemd 服务..."
 cat > /etc/systemd/system/fabric-lead-finder.service <<'SERVICEEOF'
 [Unit]
 Description=Fabric Lead Finder Web App
@@ -63,7 +76,7 @@ systemctl enable fabric-lead-finder
 echo "  -> systemd 服务已配置"
 
 # ---- 5. Nginx 反向代理 ----
-echo "[5/7] 配置 Nginx..."
+echo "[6/8] 配置 Nginx..."
 cat > /etc/nginx/sites-available/fabric-lead-finder <<'NGINXEOF'
 server {
     listen 80;
@@ -85,12 +98,12 @@ nginx -t
 echo "  -> Nginx 配置完成"
 
 # ---- 6. 启动服务 ----
-echo "[6/7] 启动服务..."
+echo "[7/8] 启动服务..."
 systemctl restart nginx
 systemctl restart fabric-lead-finder
 
 # ---- 7. 验证 ----
-echo "[7/7] 验证服务状态..."
+echo "[8/8] 验证服务状态..."
 sleep 2
 if systemctl is-active --quiet fabric-lead-finder; then
     echo "  -> 服务运行正常"
