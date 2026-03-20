@@ -120,6 +120,12 @@ class AmapKeyCreate(BaseModel):
     used_count: int = 0
 
 
+class AmapKeyUpdate(BaseModel):
+    name: Optional[str] = None
+    monthly_limit: Optional[int] = None
+    used_count: Optional[int] = None
+
+
 class AmapKeyOut(BaseModel):
     id: int
     key: str

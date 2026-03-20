@@ -4,10 +4,10 @@ import {
   message, Progress, Popconfirm, Typography, Grid,
 } from 'antd';
 import {
-  PlusOutlined, DeleteOutlined, SwapOutlined, KeyOutlined,
+  PlusOutlined, DeleteOutlined, SwapOutlined, KeyOutlined, EditOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { getAmapKeys, addAmapKey, activateAmapKey, deleteAmapKey } from '../api/client';
+import { getAmapKeys, addAmapKey, updateAmapKey, activateAmapKey, deleteAmapKey } from '../api/client';
 
 const { Title } = Typography;
 const { useBreakpoint } = Grid;
@@ -26,7 +26,8 @@ interface AmapKey {
 export default function AmapKeys() {
   const [keys, setKeys] = useState<AmapKey[]>([]);
   const [loading, setLoading] = useState(false);
-  const [addModal, setAddModal] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingKey, setEditingKey] = useState<AmapKey | null>(null);
   const [form] = Form.useForm();
   const screens = useBreakpoint();
   const isMobile = !screens.md;
@@ -45,16 +46,41 @@ export default function AmapKeys() {
 
   useEffect(() => { fetchKeys(); }, []);
 
-  const handleAdd = async () => {
+  const openAdd = () => {
+    setEditingKey(null);
+    form.resetFields();
+    setModalOpen(true);
+  };
+
+  const openEdit = (record: AmapKey) => {
+    setEditingKey(record);
+    form.setFieldsValue({
+      name: record.name,
+      monthly_limit: record.monthly_limit,
+      used_count: record.used_count,
+    });
+    setModalOpen(true);
+  };
+
+  const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      await addAmapKey(values);
-      message.success('添加成功');
-      setAddModal(false);
+      if (editingKey) {
+        await updateAmapKey(editingKey.id, {
+          name: values.name,
+          monthly_limit: values.monthly_limit,
+          used_count: values.used_count,
+        });
+        message.success('更新成功');
+      } else {
+        await addAmapKey(values);
+        message.success('添加成功');
+      }
+      setModalOpen(false);
       form.resetFields();
       fetchKeys();
     } catch {
-      message.error('添加失败');
+      message.error(editingKey ? '更新失败' : '添加失败');
     }
   };
 
@@ -82,6 +108,35 @@ export default function AmapKeys() {
     if (key.length <= 8) return key;
     return key.slice(0, 4) + '****' + key.slice(-4);
   };
+
+  const renderModal = () => (
+    <Modal
+      title={editingKey ? '编辑 Key' : '添加高德 Key'}
+      open={modalOpen}
+      onOk={handleSubmit}
+      onCancel={() => { setModalOpen(false); form.resetFields(); }}
+      okText={editingKey ? '保存' : '添加'}
+      cancelText="取消"
+      width={isMobile ? '95%' : 520}
+    >
+      <Form form={form} layout="vertical">
+        {!editingKey && (
+          <Form.Item label="Key" name="key" rules={[{ required: true, message: '请输入 Key' }]}>
+            <Input placeholder="高德地图 API Key" />
+          </Form.Item>
+        )}
+        <Form.Item label="备注名称" name="name">
+          <Input placeholder="如：主号、备用号" />
+        </Form.Item>
+        <Form.Item label="每月额度" name="monthly_limit" initialValue={5000}>
+          <InputNumber min={1} style={{ width: '100%' }} />
+        </Form.Item>
+        <Form.Item label="已用次数" name="used_count" initialValue={0}>
+          <InputNumber min={0} style={{ width: '100%' }} placeholder="非必填，默认为 0" />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
 
   const columns: ColumnsType<AmapKey> = [
     {
@@ -117,14 +172,14 @@ export default function AmapKeys() {
       title: '重置月份', dataIndex: 'reset_month', width: 100,
     },
     {
-      title: '操作', width: 160,
+      title: '操作', width: 200,
       render: (_: unknown, record: AmapKey) => (
         <Space>
+          <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openEdit(record)}>
+            编辑
+          </Button>
           {!record.is_active && (
-            <Button
-              type="link" size="small" icon={<SwapOutlined />}
-              onClick={() => handleActivate(record.id)}
-            >
+            <Button type="link" size="small" icon={<SwapOutlined />} onClick={() => handleActivate(record.id)}>
               切换
             </Button>
           )}
@@ -144,9 +199,7 @@ export default function AmapKeys() {
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <Title level={4} style={{ margin: 0 }}>高德 Key 管理</Title>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setAddModal(true)}>
-            添加
-          </Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openAdd}>添加</Button>
         </div>
 
         {keys.map((record) => {
@@ -171,6 +224,7 @@ export default function AmapKeys() {
                   {record.used_count} / {record.monthly_limit} ({record.reset_month})
                 </span>
                 <Space>
+                  <Button type="link" size="small" onClick={() => openEdit(record)}>编辑</Button>
                   {!record.is_active && (
                     <Button type="link" size="small" onClick={() => handleActivate(record.id)}>切换</Button>
                   )}
@@ -187,30 +241,7 @@ export default function AmapKeys() {
           <Card><div style={{ textAlign: 'center', color: '#999' }}>暂无 Key，请添加</div></Card>
         )}
 
-        <Modal
-          title="添加高德 Key"
-          open={addModal}
-          onOk={handleAdd}
-          onCancel={() => { setAddModal(false); form.resetFields(); }}
-          okText="添加"
-          cancelText="取消"
-          width="95%"
-        >
-          <Form form={form} layout="vertical">
-            <Form.Item label="Key" name="key" rules={[{ required: true, message: '请输入 Key' }]}>
-              <Input placeholder="高德地图 API Key" />
-            </Form.Item>
-            <Form.Item label="备注名称" name="name">
-              <Input placeholder="如：主号、备用号" />
-            </Form.Item>
-            <Form.Item label="每月额度" name="monthly_limit" initialValue={5000}>
-              <InputNumber min={1} style={{ width: '100%' }} />
-            </Form.Item>
-            <Form.Item label="已用次数" name="used_count" initialValue={0}>
-              <InputNumber min={0} style={{ width: '100%' }} placeholder="非必填，默认为 0" />
-            </Form.Item>
-          </Form>
-        </Modal>
+        {renderModal()}
       </div>
     );
   }
@@ -219,9 +250,7 @@ export default function AmapKeys() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <Title level={4} style={{ margin: 0 }}>高德 Key 管理</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setAddModal(true)}>
-          添加 Key
-        </Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={openAdd}>添加 Key</Button>
       </div>
 
       <Table
@@ -233,29 +262,7 @@ export default function AmapKeys() {
         pagination={false}
       />
 
-      <Modal
-        title="添加高德 Key"
-        open={addModal}
-        onOk={handleAdd}
-        onCancel={() => { setAddModal(false); form.resetFields(); }}
-        okText="添加"
-        cancelText="取消"
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item label="Key" name="key" rules={[{ required: true, message: '请输入 Key' }]}>
-            <Input placeholder="高德地图 API Key" />
-          </Form.Item>
-          <Form.Item label="备注名称" name="name">
-            <Input placeholder="如：主号、备用号" />
-          </Form.Item>
-          <Form.Item label="每月额度" name="monthly_limit" initialValue={5000}>
-            <InputNumber min={1} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item label="已用次数" name="used_count" initialValue={0}>
-            <InputNumber min={0} style={{ width: '100%' }} placeholder="非必填，默认为 0" />
-          </Form.Item>
-        </Form>
-      </Modal>
+      {renderModal()}
     </div>
   );
 }

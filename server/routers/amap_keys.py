@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from server.database import get_db
 from server.auth import get_current_user
 from server.models import AmapKey
-from server.schemas import AmapKeyCreate, AmapKeyOut
+from server.schemas import AmapKeyCreate, AmapKeyUpdate, AmapKeyOut
 
 router = APIRouter(prefix="/api/amap-keys", tags=["高德Key管理"])
 
@@ -71,6 +71,29 @@ def activate_key(
     # 取消其他 key 的激活状态
     db.query(AmapKey).update({AmapKey.is_active: False})
     key.is_active = True
+    db.commit()
+    db.refresh(key)
+    return key
+
+
+@router.put("/{key_id}", response_model=AmapKeyOut)
+def update_key(
+    key_id: int,
+    data: AmapKeyUpdate,
+    db: Session = Depends(get_db),
+    _user: str = Depends(get_current_user),
+):
+    key = db.query(AmapKey).filter(AmapKey.id == key_id).first()
+    if not key:
+        raise HTTPException(status_code=404, detail="Key 不存在")
+
+    if data.name is not None:
+        key.name = data.name
+    if data.monthly_limit is not None:
+        key.monthly_limit = data.monthly_limit
+    if data.used_count is not None:
+        key.used_count = data.used_count
+
     db.commit()
     db.refresh(key)
     return key

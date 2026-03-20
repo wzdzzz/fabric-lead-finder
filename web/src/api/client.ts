@@ -58,5 +58,7 @@ export const exportExcel = (params: Record<string, string>) =>
 export const getAmapKeys = () => api.get('/amap-keys');
 export const addAmapKey = (data: { key: string; name?: string; monthly_limit?: number }) =>
   api.post('/amap-keys', data);
+export const updateAmapKey = (id: number, data: { name?: string; monthly_limit?: number; used_count?: number }) =>
+  api.put(`/amap-keys/${id}`, data);
 export const activateAmapKey = (id: number) => api.put(`/amap-keys/${id}/activate`);
 export const deleteAmapKey = (id: number) => api.delete(`/amap-keys/${id}`);
