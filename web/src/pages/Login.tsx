@@ -32,8 +32,9 @@ export default function Login() {
       justifyContent: 'center',
       alignItems: 'center',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: 16,
     }}>
-      <Card style={{ width: 400, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+      <Card style={{ width: '100%', maxWidth: 400, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <Title level={3} style={{ margin: 0 }}>布匹中介获客工具</Title>
           <p style={{ color: '#999', marginTop: 8 }}>管理后台</p>

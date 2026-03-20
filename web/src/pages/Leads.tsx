@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Table, Input, Select, Button, Tag, Space, message, Modal, Form,
-  Popover, Tooltip, Card, Row, Col,
+  Popover, Tooltip, Card, Row, Col, Grid,
 } from 'antd';
 import {
   SearchOutlined, DownloadOutlined, EditOutlined, TagsOutlined,
@@ -11,6 +11,7 @@ import {
   getLeads, updateLead, batchUpdateLeads, getAllTags, exportExcel, getLeadStats,
 } from '../api/client';
 
+const { useBreakpoint } = Grid;
 const STATUS_OPTIONS = ['未联系', '已联系', '有意向', '无意向', '已成交', '无效'];
 
 interface Lead {
@@ -49,6 +50,8 @@ export default function Leads() {
   const [newTag, setNewTag] = useState('');
   const [batchStatus, setBatchStatus] = useState('');
   const [batchTag, setBatchTag] = useState('');
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -182,49 +185,22 @@ export default function Leads() {
     }
   };
 
-  const columns: ColumnsType<Lead> = [
+  const desktopColumns: ColumnsType<Lead> = [
+    { title: '公司名称', dataIndex: 'name', width: 240, ellipsis: true },
     {
-      title: '公司名称',
-      dataIndex: 'name',
-      width: 240,
-      ellipsis: true,
-    },
-    {
-      title: '联系电话',
-      dataIndex: 'phone',
-      width: 160,
+      title: '联系电话', dataIndex: 'phone', width: 160,
       render: (phone: string) =>
-        phone ? (
-          <span style={{ color: '#c00', fontWeight: 600 }}>{phone}</span>
-        ) : (
-          <span style={{ color: '#ccc' }}>-</span>
-        ),
+        phone ? <span style={{ color: '#c00', fontWeight: 600 }}>{phone}</span>
+          : <span style={{ color: '#ccc' }}>-</span>,
     },
+    { title: '城市', dataIndex: 'city', width: 80 },
+    { title: '区县', dataIndex: 'district', width: 80 },
+    { title: '行业', dataIndex: 'industry', width: 140, ellipsis: true },
     {
-      title: '城市',
-      dataIndex: 'city',
-      width: 80,
-    },
-    {
-      title: '区县',
-      dataIndex: 'district',
-      width: 80,
-    },
-    {
-      title: '行业',
-      dataIndex: 'industry',
-      width: 140,
-      ellipsis: true,
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      width: 120,
+      title: '状态', dataIndex: 'status', width: 120,
       render: (status: string, record: Lead) => (
         <Select
-          size="small"
-          value={status}
-          style={{ width: 100 }}
+          size="small" value={status} style={{ width: 100 }}
           onChange={(v) => handleStatusChange(record.id, v)}
           options={STATUS_OPTIONS.map((s) => ({ label: s, value: s }))}
           popupMatchSelectWidth={false}
@@ -232,54 +208,33 @@ export default function Leads() {
       ),
     },
     {
-      title: '标签',
-      dataIndex: 'tags',
-      width: 200,
+      title: '标签', dataIndex: 'tags', width: 200,
       render: (tags: string[], record: Lead) => (
         <Space size={4} wrap>
           {tags.map((tag) => (
-            <Tag key={tag} closable onClose={() => handleRemoveTag(record, tag)} color="blue">
-              {tag}
-            </Tag>
+            <Tag key={tag} closable onClose={() => handleRemoveTag(record, tag)} color="blue">{tag}</Tag>
           ))}
           <Popover
             trigger="click"
             content={
               <Space.Compact>
-                <Input
-                  size="small"
-                  placeholder="新标签"
-                  value={newTag}
+                <Input size="small" placeholder="新标签" value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
-                  onPressEnter={() => {
-                    handleAddTag(record, newTag);
-                    setNewTag('');
-                  }}
+                  onPressEnter={() => { handleAddTag(record, newTag); setNewTag(''); }}
                   style={{ width: 100 }}
                 />
-                <Button
-                  size="small"
-                  type="primary"
-                  onClick={() => {
-                    handleAddTag(record, newTag);
-                    setNewTag('');
-                  }}
-                >
-                  添加
-                </Button>
+                <Button size="small" type="primary"
+                  onClick={() => { handleAddTag(record, newTag); setNewTag(''); }}>添加</Button>
               </Space.Compact>
             }
           >
-            <Tag style={{ cursor: 'pointer', borderStyle: 'dashed' }}>
-              <TagsOutlined /> 添加
-            </Tag>
+            <Tag style={{ cursor: 'pointer', borderStyle: 'dashed' }}><TagsOutlined /> 添加</Tag>
           </Popover>
         </Space>
       ),
     },
     {
-      title: '操作',
-      width: 80,
+      title: '操作', width: 80,
       render: (_: unknown, record: Lead) => (
         <Tooltip title="编辑">
           <Button type="link" icon={<EditOutlined />} onClick={() => openEdit(record)} />
@@ -288,11 +243,40 @@ export default function Leads() {
     },
   ];
 
+  const mobileColumns: ColumnsType<Lead> = [
+    {
+      title: '公司名称', dataIndex: 'name', ellipsis: true,
+    },
+    {
+      title: '电话', dataIndex: 'phone', width: 120,
+      render: (phone: string) =>
+        phone ? <a href={`tel:${phone}`} style={{ color: '#c00', fontWeight: 600 }}>{phone}</a>
+          : <span style={{ color: '#ccc' }}>-</span>,
+    },
+    {
+      title: '状态', dataIndex: 'status', width: 100,
+      render: (status: string, record: Lead) => (
+        <Select
+          size="small" value={status} style={{ width: 85 }}
+          onChange={(v) => handleStatusChange(record.id, v)}
+          options={STATUS_OPTIONS.map((s) => ({ label: s, value: s }))}
+          popupMatchSelectWidth={false}
+        />
+      ),
+    },
+    {
+      title: '', width: 40,
+      render: (_: unknown, record: Lead) => (
+        <Button type="link" icon={<EditOutlined />} onClick={() => openEdit(record)} size="small" />
+      ),
+    },
+  ];
+
   return (
     <div>
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={[12, 12]}>
-          <Col span={5}>
+          <Col xs={24} sm={12} md={5}>
             <Input
               placeholder="搜索公司名/电话/地址"
               prefix={<SearchOutlined />}
@@ -301,7 +285,7 @@ export default function Leads() {
               allowClear
             />
           </Col>
-          <Col span={5}>
+          <Col xs={24} sm={12} md={5}>
             <Select
               mode="multiple"
               style={{ width: '100%' }}
@@ -314,7 +298,7 @@ export default function Leads() {
               options={cities.map((c) => ({ label: c, value: c }))}
             />
           </Col>
-          <Col span={4}>
+          <Col xs={12} sm={8} md={4}>
             <Select
               style={{ width: '100%' }}
               placeholder="状态"
@@ -324,7 +308,7 @@ export default function Leads() {
               options={STATUS_OPTIONS.map((s) => ({ label: s, value: s }))}
             />
           </Col>
-          <Col span={4}>
+          <Col xs={12} sm={8} md={4}>
             <Select
               style={{ width: '100%' }}
               placeholder="标签"
@@ -334,7 +318,7 @@ export default function Leads() {
               options={allTags.map((t) => ({ label: t, value: t }))}
             />
           </Col>
-          <Col span={3}>
+          <Col xs={12} sm={8} md={3}>
             <Select
               style={{ width: '100%' }}
               placeholder="电话"
@@ -347,9 +331,9 @@ export default function Leads() {
               ]}
             />
           </Col>
-          <Col span={3}>
-            <Button icon={<DownloadOutlined />} onClick={handleExport}>
-              导出 Excel
+          <Col xs={12} sm={8} md={3}>
+            <Button icon={<DownloadOutlined />} onClick={handleExport} block={isMobile}>
+              导出
             </Button>
           </Col>
         </Row>
@@ -357,7 +341,7 @@ export default function Leads() {
 
       {selectedRowKeys.length > 0 && (
         <Card size="small" style={{ marginBottom: 16 }}>
-          <Space>
+          <Space wrap>
             <span>已选 {selectedRowKeys.length} 条</span>
             <Select
               size="small"
@@ -381,7 +365,7 @@ export default function Leads() {
               添加
             </Button>
             <Button size="small" onClick={() => setSelectedRowKeys([])}>
-              取消选择
+              取消
             </Button>
           </Space>
         </Card>
@@ -389,11 +373,11 @@ export default function Leads() {
 
       <Table
         rowKey="id"
-        columns={columns}
+        columns={isMobile ? mobileColumns : desktopColumns}
         dataSource={data}
         loading={loading}
-        size="middle"
-        scroll={{ x: 1200 }}
+        size={isMobile ? 'small' : 'middle'}
+        scroll={isMobile ? undefined : { x: 1200 }}
         rowSelection={{
           selectedRowKeys,
           onChange: (keys) => setSelectedRowKeys(keys as number[]),
@@ -402,9 +386,10 @@ export default function Leads() {
           current: page,
           pageSize,
           total,
-          showSizeChanger: true,
-          showTotal: (t) => `共 ${t} 条`,
+          showSizeChanger: !isMobile,
+          showTotal: isMobile ? undefined : (t) => `共 ${t} 条`,
           onChange: (p, ps) => { setPage(p); setPageSize(ps); },
+          simple: isMobile,
         }}
       />
 
@@ -415,6 +400,7 @@ export default function Leads() {
         onCancel={() => setEditModal(false)}
         okText="保存"
         cancelText="取消"
+        width={isMobile ? '95%' : 520}
       >
         <Form form={form} layout="vertical">
           <Form.Item label="联系电话" name="phone">

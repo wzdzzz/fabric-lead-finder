@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  Card, Row, Col, Statistic, Select, Button, Progress, message, Tag, Space, Typography,
+  Card, Row, Col, Statistic, Select, Button, Progress, message, Tag, Space, Typography, Grid,
 } from 'antd';
 import {
   TeamOutlined, PhoneOutlined, SearchOutlined, RocketOutlined,
@@ -8,6 +8,7 @@ import {
 import { getKeywords, getRegions, getLeadStats, createTask, getTask } from '../api/client';
 
 const { Title } = Typography;
+const { useBreakpoint } = Grid;
 
 const REGION_GROUPS: Record<string, string[]> = {
   '广东': ['广州', '东莞', '深圳', '佛山', '中山', '惠州', '汕头', '揭阳', '潮州', '江门', '肇庆', '清远'],
@@ -54,6 +55,8 @@ export default function Dashboard() {
   const [runningTask, setRunningTask] = useState<TaskInfo | null>(null);
   const [launching, setLaunching] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
 
   useEffect(() => {
     loadData();
@@ -100,7 +103,6 @@ export default function Dashboard() {
       setRunningTask(task);
       message.success(`任务 #${task.id} 已启动`);
 
-      // 轮询进度
       pollRef.current = setInterval(async () => {
         try {
           const r = await getTask(task.id);
@@ -131,13 +133,13 @@ export default function Dashboard() {
     <div>
       <Title level={4}>数据概览</Title>
 
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={6}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={12} md={6}>
           <Card>
             <Statistic title="客户总数" value={stats?.total ?? 0} prefix={<TeamOutlined />} />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={12} md={6}>
           <Card>
             <Statistic
               title="有联系电话"
@@ -147,12 +149,12 @@ export default function Dashboard() {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={12} md={6}>
           <Card>
             <Statistic title="无联系电话" value={stats?.without_phone ?? 0} />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={12} md={6}>
           <Card>
             <Statistic
               title="电话覆盖率"
@@ -179,14 +181,14 @@ export default function Dashboard() {
         <div style={{ marginBottom: 16 }}>
           <div style={{ marginBottom: 8, fontWeight: 500 }}>目标地区</div>
           <div style={{ marginBottom: 8 }}>
-            <Space wrap>
+            <Space wrap size={[4, 8]}>
               {Object.entries(REGION_GROUPS).map(([province, cities]) => {
                 const allSelected = cities.every((c) => selectedRegions.includes(c));
                 return (
                   <Tag
                     key={province}
                     color={allSelected ? 'blue' : undefined}
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: 'pointer', margin: 0 }}
                     onClick={() => selectProvince(cities)}
                   >
                     {province}
@@ -195,7 +197,7 @@ export default function Dashboard() {
               })}
               <Tag
                 color={selectedRegions.length === allRegions.length ? 'blue' : undefined}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', margin: 0 }}
                 onClick={() =>
                   setSelectedRegions(
                     selectedRegions.length === allRegions.length ? [] : [...allRegions]
@@ -216,7 +218,12 @@ export default function Dashboard() {
           />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{
+          display: 'flex',
+          alignItems: isMobile ? 'flex-start' : 'center',
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? 8 : 16,
+        }}>
           <Button
             type="primary"
             icon={<RocketOutlined />}
@@ -224,6 +231,7 @@ export default function Dashboard() {
             loading={launching}
             disabled={!!runningTask && runningTask.status === 'running'}
             onClick={startScrape}
+            block={isMobile}
           >
             开始采集
           </Button>
