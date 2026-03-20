@@ -1,11 +1,13 @@
 """高德 Key 服务 - 获取可用 key、增加用量"""
 
+from __future__ import annotations
 from datetime import datetime
+from typing import Optional
 from sqlalchemy.orm import Session
 from server.models import AmapKey
 
 
-def get_active_key(db: Session) -> str | None:
+def get_active_key(db: Session) -> Optional[str]:
     """获取当前可用的 key，自动切换用完的 key"""
     current_month = datetime.now().strftime("%Y-%m")
 
