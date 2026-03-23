@@ -209,9 +209,9 @@ export default function Dashboard() {
             </Space>
           </div>
           <Select
-            mode="multiple"
+            mode="tags"
             style={{ width: '100%' }}
-            placeholder="选择城市"
+            placeholder="选择或输入城市（输入后按回车添加）"
             value={selectedRegions}
             onChange={setSelectedRegions}
             options={allRegions.map((r) => ({ label: r, value: r }))}
